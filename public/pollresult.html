@@ -1,0 +1,56 @@
+<title>Result</title>
+<style>
+    .balken {
+        background-color:white;
+        border: 1px solid black;
+        margin: 1px;
+        height: 35px;
+        font-family: Copperplate, fantasy;
+        transition-duration: 1s;
+    }
+</style>
+<list id="results" style="width: 100%">
+</list>
+<script>
+    const ws = new WebSocket('ws://localhost:3001');
+    let prevVotes = [];
+    ws.onmessage = (msg) => {
+        console.log(msg.data);
+        // [{"option":{"value":"1","display":"Likes"},"votes":0},{"option":{"value":"2","display":"Dislikes"},"votes":1},{"option":{"value":"3","display":"Super"},"votes":0}]
+
+        let votes = 0;
+
+        JSON.parse(msg.data).forEach(obj => {
+            votes += obj.votes;
+        });
+
+        const resultList = document.getElementById('results');
+
+        JSON.parse(msg.data).forEach(obj => {
+
+            if(document.getElementById('balken'+obj.option.value)){
+                prevVotes.forEach( vote => {
+                    if(vote.option.display == obj.option.display) {
+                        console.log('changing width dynamically');
+                        dynamicWidth(obj, votes);
+                        vote = obj;
+                    }
+                })
+            } else {
+                const width = obj.votes == 0 ? 1 : obj.votes/votes * 100;
+                const html = `<div class="balken" id="balken${obj.option.value}" style="width: ${width}%; background-color: ${obj.option.color}"><span id="displayName${obj.option.value}">${obj.option.display}: </span><br><span id="votes${obj.option.display}">${obj.votes}</span></div>`;
+                resultList.innerHTML += html;
+                prevVotes.push(obj);
+            }
+        });
+    }
+
+    function dynamicWidth(vote, totalVotes) {
+        const balken = document.getElementById('balken'+vote.option.value);
+        const desiredWidth = vote.votes == 0 ? 1 : vote.votes/totalVotes * 100;
+        const votes = document.getElementById('votes'+vote.option.display);
+
+        balken.style.width = desiredWidth + "%";
+        votes.innerHTML = vote.votes;
+    }
+</script>

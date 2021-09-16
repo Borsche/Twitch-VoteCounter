@@ -1,0 +1,98 @@
+<title>Poll</title>
+<style>
+    .colorpicker {
+        width: 30px;
+        height: 30px;
+        display: inline-block;
+        border: 1px solid black;
+    }
+</style>
+<script src="js/vanilla-picker.min.js"></script>
+<div id="Pollstart" style="display:none">
+    <button onclick="showNewPollWindow()">New Poll</button>
+    Poll status: 
+</div>
+<div id="PollCreation">
+    <form action="savepoll" method="POST">
+        End/Start Hotkey: <input id="hotkeyInput" name="hotkey" value="PageUp" disabled><br>
+        <button onclick="setKey()">Assign Hotkey</button><br>
+        <list id="options">
+            Option 1:<input id="option1" value="1">Display name:<input id="displayName1" value="Likes">Color:<div id="color1" style="background-color: #31cb18ff;" class="colorpicker" onclick="openColorPicker(this)"></div><br>
+            Option 2:<input id="option2" value="2">Display name:<input id="displayName2" value="Dislikes">Color:<div id="color2" style="background-color: #d71445ff;" class="colorpicker" onclick="openColorPicker(this)"></div><br>
+            Option 2:<input id="option3" value="3">Display name:<input id="displayName3" value="Super">Color:<div id="color3" style="background-color: #e5b000ff;" class="colorpicker" onclick="openColorPicker(this)"></div><br>
+        </list>
+        <button onclick="addOption()">Add Option</button>
+        <button onclick="savePoll()">Save Poll</button>
+    </form>
+</div>
+<script>
+    function createNewPollWindow() {
+
+    }
+
+    function openColorPicker(obj) {
+        obj.onclick = "";
+        new Picker({
+            parent: obj,
+            onChange: (color) => {
+                obj.style.backgroundColor = color.hex;
+            },
+            onDone: (color) => {
+                obj.style.backgroundColor = color.hex;
+            },
+            onClose: (color) => {
+                obj.style.backgroundColor = color.hex;
+            },
+        });
+    }
+
+    var optionCount = 3;
+    function addOption() {
+        event.preventDefault();
+        optionCount += 1;
+        document.getElementById('options').innerHTML += `Option ${optionCount}: <input id="option${optionCount}">Display name:<input id="displayName${optionCount}"><br>`
+    }
+
+    function savePoll() {
+        event.preventDefault();
+
+        let options = [];
+        for(x = 1; x <= optionCount; x++){
+            const option = {
+                value: document.getElementById(`option${x}`).value,
+                display: document.getElementById(`displayName${x}`).value,
+                color: document.getElementById(`color${x}`).style.backgroundColor
+            }
+
+            options.push(option);
+        }
+
+        const poll = {
+            options: options,
+            hotkey: document.getElementById('hotkeyInput').value
+        }
+
+        // send request to backend
+        fetch('/savepoll', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(poll),
+        }).then(
+            console.log("Request succesfull")
+        );
+    }
+
+    function setKey() {
+        event.preventDefault();
+        document.addEventListener('keyup', getKey);
+        console.log("Assinging Hotkey")
+    }
+
+    function getKey(e) {
+        document.getElementById('hotkeyInput').value = e.key;
+        console.log(e.key)
+        document.removeEventListener('keyup', getKey);
+    }
+</script>
