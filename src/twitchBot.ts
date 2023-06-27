@@ -7,10 +7,7 @@ const poll = Poll.getInstance();
 // https://twitchapps.com/tmi/
 // To-Do: automated oauth generation
 const opts = {
-    identity: {
-        username: "Darthnv4deBot",
-        password: "oauth:v0diiudmj105ete2vjixzgtsbhmlgf",
-    },
+    identity: {},
     channels: [
       'darthnv4deher'
     ]
